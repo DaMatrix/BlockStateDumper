@@ -1,0 +1,18 @@
+[
+  {
+    "modid": "blockstatedumper",
+    "name": "BlockStateDumper",
+    "description": "Dump block states in your world",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "https://daporkchop.net",
+    "updateUrl": "",
+    "authorList": [
+      "DaPorkchop_"
+    ],
+    "credits": "",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": []
+  }
+]
