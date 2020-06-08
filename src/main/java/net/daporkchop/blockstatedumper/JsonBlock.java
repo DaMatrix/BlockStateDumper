@@ -23,14 +23,19 @@ package net.daporkchop.blockstatedumper;
 import net.minecraft.block.Block;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Representation of a block which is serializable by Gson.
  *
  * @author DaPorkchop_
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({
+        "unchecked",
+        "deprecation"
+})
 public class JsonBlock {
     public static JsonBlock fromMinecraft(Block block) {
         JsonBlock json = new JsonBlock();
@@ -41,20 +46,22 @@ public class JsonBlock {
                 .map(JsonProperty::fromMinecraft)
                 .collect(Collectors.toList());
 
-        json.defaultState = JsonState.fromMinecraft(block.getDefaultState());
-
         json.states = block.getBlockState().getValidStates().stream()
                 .map(JsonState::fromMinecraft)
                 .collect(Collectors.toList());
 
-        System.out.printf("%s: %d states\n", json.name, json.states.size());
+        json.metas = IntStream.range(json.legacyId << 4, (json.legacyId + 1) << 4)
+                .mapToObj(Block.BLOCK_STATE_IDS::getByValue)
+                .map(JsonState::fromMinecraft)
+                .map(state -> state == null ? null : state.properties)
+                .toArray(Map[]::new);
 
         return json;
     }
 
     public String name;
     public List<JsonProperty> properties;
-    public JsonState defaultState;
     public List<JsonState> states;
+    public Map<String, Object>[] metas;
     public int legacyId;
 }

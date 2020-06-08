@@ -35,6 +35,9 @@ import java.util.stream.Collectors;
 @SuppressWarnings({"unchecked", "deprecation"})
 public class JsonState {
     public static JsonState fromMinecraft(IBlockState state)    {
+        if (state == null)  {
+            return null;
+        }
         JsonState json = new JsonState();
 
         json.meta = Block.BLOCK_STATE_IDS.get(state) & 0xF;
