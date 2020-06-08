@@ -23,10 +23,7 @@ package net.daporkchop.blockstatedumper;
 import net.minecraft.block.properties.IProperty;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -36,13 +33,16 @@ import java.util.stream.Collectors;
  */
 @SuppressWarnings("unchecked")
 public class JsonProperty {
-    public static JsonProperty fromMinecraft(IProperty property)    {
+    public static JsonProperty fromMinecraft(IProperty property) {
         JsonProperty json = new JsonProperty();
-        if (property.getValueClass() == Integer.class)  {
+
+        json.name = property.getName();
+
+        if (property.getValueClass() == Integer.class) {
             json.type = "int";
-        } else if (property.getValueClass() == Boolean.class)   {
+        } else if (property.getValueClass() == Boolean.class) {
             json.type = "boolean";
-        } else if (Enum.class.isAssignableFrom(property.getValueClass()))   {
+        } else if (Enum.class.isAssignableFrom(property.getValueClass())) {
             json.type = "enum";
         } else {
             throw new IllegalArgumentException(property.getValueClass().getCanonicalName());
@@ -55,16 +55,17 @@ public class JsonProperty {
         return json;
     }
 
-    public static Object toJsonSerializable(IProperty property, Object value)   {
+    public static Object toJsonSerializable(IProperty property, Object value) {
         if (property.getValueClass() == Integer.class || property.getValueClass() == Boolean.class) {
             return value;
-        } else if (value instanceof Enum)   {
+        } else if (value instanceof Enum) {
             return property.getName((Enum) value);
         } else {
             throw new IllegalArgumentException(property.getValueClass() + ": " + value);
         }
     }
 
+    public String name;
     public String type;
     public List<Object> values;
 }
