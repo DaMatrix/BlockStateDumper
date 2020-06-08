@@ -56,6 +56,8 @@ public class JsonBlock {
                 .map(state -> state == null ? null : state.properties)
                 .toArray(Map[]::new);
 
+        json.defaultState = JsonState.fromMinecraft(block.getDefaultState()).properties;
+
         return json;
     }
 
@@ -63,5 +65,6 @@ public class JsonBlock {
     public List<JsonProperty> properties;
     public List<JsonState> states;
     public Map<String, Object>[] metas;
+    public Map<String, Object> defaultState;
     public int legacyId;
 }
