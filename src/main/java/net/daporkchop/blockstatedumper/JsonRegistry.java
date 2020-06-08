@@ -20,38 +20,33 @@
 
 package net.daporkchop.blockstatedumper;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.properties.IProperty;
+import com.google.gson.annotations.SerializedName;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.function.Function;
+import java.util.function.ToIntFunction;
 
 /**
- * Representation of a block which is serializable by Gson.
- *
  * @author DaPorkchop_
  */
-@SuppressWarnings({
-        "unchecked",
-        "deprecation"
-})
-public class JsonBlock {
-    public static JsonBlock fromMinecraft(Block block) {
-        JsonBlock json = new JsonBlock();
+public class JsonRegistry {
+    @SerializedName("default")
+    public String defaultField;
+    public Map<String, RegistryEntry> entries = new LinkedHashMap<>();
 
-        json.properties = block.getBlockState().getProperties().stream()
-                .collect(BlockStateDumper.toLinkedHashMap(
-                        IProperty::getName,
-                        property -> property.getAllowedValues().stream().map(((IProperty) property)::getName).collect(Collectors.toList())));
+    public <V> JsonRegistry(V defaultValue, Iterable<V> values, Function<V, String> keyExtractor, ToIntFunction<V> idExtractor) {
+        this.defaultField = keyExtractor.apply(defaultValue);
 
-        json.states = block.getBlockState().getValidStates().stream()
-                .map(JsonState::fromMinecraft)
-                .collect(Collectors.toList());
-
-        return json;
+        for (V v : values)   {
+            RegistryEntry entry = new RegistryEntry();
+            entry.protocol_id = idExtractor.applyAsInt(v);
+            this.entries.put(keyExtractor.apply(v), entry);
+        }
     }
 
-    public Map<String, List<Object>> properties;
-    public List<JsonState> states;
+    public static class RegistryEntry   {
+        public int protocol_id;
+    }
 }

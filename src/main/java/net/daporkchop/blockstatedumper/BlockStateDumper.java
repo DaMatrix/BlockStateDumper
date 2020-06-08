@@ -32,11 +32,12 @@ import org.apache.logging.log4j.Logger;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -51,6 +52,15 @@ public class BlockStateDumper {
 
     public static Logger logger;
 
+    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+
+    public static <T, K, V> Collector<T, ?, Map<K, V>> toLinkedHashMap(Function<T, K> keyExtractor, Function<T, V> valueExtractor) {
+        return Collectors.toMap(
+                keyExtractor,
+                valueExtractor,
+                (u, v) -> { throw new IllegalStateException(String.format("Duplicate key %s", u)); });
+    }
+
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         logger = event.getModLog();
@@ -58,16 +68,19 @@ public class BlockStateDumper {
 
     @EventHandler
     public void serverStarting(FMLServerStartingEvent event) {
-        logger.info("Dumping block states...");
-        List<JsonBlock> blocks = StreamSupport.stream(Block.REGISTRY.spliterator(), false).map(JsonBlock::fromMinecraft).collect(Collectors.toList());
-        logger.info("Saving block states...");
-        try (Writer prettyWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File("blockstates.json")), StandardCharsets.UTF_8));
-             Writer minWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File("blockstates-min.json")), StandardCharsets.UTF_8))) {
-            new GsonBuilder().setPrettyPrinting().create().toJson(blocks, prettyWriter);
-            new Gson().toJson(blocks, minWriter);
-        } catch (IOException e) {
+        try {
+            logger.info("Saving block states...");
+            try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File("blocks.json")), StandardCharsets.UTF_8))) {
+                GSON.toJson(StreamSupport.stream(Block.REGISTRY.spliterator(), false)
+                        .collect(toLinkedHashMap(b -> b.getRegistryName().toString(), JsonBlock::fromMinecraft)), writer);
+            }
+            logger.info("Saving registries...");
+            try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File("registries.json")), StandardCharsets.UTF_8))) {
+                GSON.toJson(new JsonRegistries(), writer);
+            }
+            logger.info("Done.");
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        logger.info("Done.");
     }
 }

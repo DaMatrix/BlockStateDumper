@@ -20,38 +20,27 @@
 
 package net.daporkchop.blockstatedumper;
 
+import com.google.gson.annotations.SerializedName;
 import net.minecraft.block.Block;
-import net.minecraft.block.properties.IProperty;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 
 /**
- * Representation of a block which is serializable by Gson.
- *
  * @author DaPorkchop_
  */
-@SuppressWarnings({
-        "unchecked",
-        "deprecation"
-})
-public class JsonBlock {
-    public static JsonBlock fromMinecraft(Block block) {
-        JsonBlock json = new JsonBlock();
+public class JsonRegistries {
+    @SerializedName("minecraft:block")
+    public JsonRegistry block = new JsonRegistry(
+            Blocks.AIR,
+            Block.REGISTRY,
+            b -> b.getRegistryName().toString(),
+            Block.REGISTRY::getIDForObject);
 
-        json.properties = block.getBlockState().getProperties().stream()
-                .collect(BlockStateDumper.toLinkedHashMap(
-                        IProperty::getName,
-                        property -> property.getAllowedValues().stream().map(((IProperty) property)::getName).collect(Collectors.toList())));
-
-        json.states = block.getBlockState().getValidStates().stream()
-                .map(JsonState::fromMinecraft)
-                .collect(Collectors.toList());
-
-        return json;
-    }
-
-    public Map<String, List<Object>> properties;
-    public List<JsonState> states;
+    @SerializedName("minecraft:item")
+    public JsonRegistry item = new JsonRegistry(
+            Items.AIR,
+            Item.REGISTRY,
+            i -> i.getRegistryName().toString(),
+            Item.REGISTRY::getIDForObject);
 }

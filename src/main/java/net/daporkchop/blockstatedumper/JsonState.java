@@ -20,34 +20,55 @@
 
 package net.daporkchop.blockstatedumper;
 
+import com.google.gson.annotations.SerializedName;
 import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Representation of a block state which is serializable by Gson.
  *
  * @author DaPorkchop_
  */
-@SuppressWarnings({"unchecked", "deprecation"})
+@SuppressWarnings({
+        "unchecked",
+        "deprecation"
+})
 public class JsonState {
-    public static JsonState fromMinecraft(IBlockState state)    {
-        if (state == null)  {
-            return null;
-        }
-        JsonState json = new JsonState();
+    public static JsonState fromMinecraft(IBlockState state) {
+        int id = Block.BLOCK_STATE_IDS.get(state);
+        boolean virtual = Block.BLOCK_STATE_IDS.getByValue(id) != state;
+        boolean def = state.getBlock().getDefaultState() == state;
 
-        json.meta = Block.BLOCK_STATE_IDS.get(state) & 0xF;
+        JsonState json = def
+                ? virtual ? new DefaultAndVirtual() : new Default()
+                : virtual ? new Virtual() : new JsonState();
 
         json.properties = state.getProperties().entrySet().stream()
-                .collect(Collectors.toMap(e -> e.getKey().getName(), e -> JsonProperty.toJsonSerializable(e.getKey(), e.getValue())));
+                .collect(BlockStateDumper.toLinkedHashMap(e -> e.getKey().getName(), e -> ((IProperty) e.getKey()).getName(e.getValue())));
+        json.id = id;
 
         return json;
     }
 
-    public int meta;
     public Map<String, Object> properties;
+    public int id;
+
+    public static class Default extends JsonState {
+        @SerializedName("default")
+        public boolean defaultFlag = true;
+    }
+
+    public static class Virtual extends JsonState {
+        public boolean virtual = true;
+    }
+
+    public static class DefaultAndVirtual extends JsonState {
+        @SerializedName("default")
+        public boolean defaultFlag = true;
+
+        public boolean virtual = true;
+    }
 }
