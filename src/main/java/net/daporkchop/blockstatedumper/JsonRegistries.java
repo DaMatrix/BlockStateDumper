@@ -22,25 +22,39 @@ package net.daporkchop.blockstatedumper;
 
 import com.google.gson.annotations.SerializedName;
 import net.minecraft.block.Block;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
+import net.minecraft.world.biome.Biome;
 
 /**
  * @author DaPorkchop_
  */
 public class JsonRegistries {
     @SerializedName("minecraft:block")
-    public JsonRegistry block = new JsonRegistry(
+    public JsonRegistry block = new JsonRegistry.WithDefault(
             Blocks.AIR,
             Block.REGISTRY,
             b -> b.getRegistryName().toString(),
             Block.REGISTRY::getIDForObject);
 
     @SerializedName("minecraft:item")
-    public JsonRegistry item = new JsonRegistry(
+    public JsonRegistry item = new JsonRegistry.WithDefault(
             Items.AIR,
             Item.REGISTRY,
             i -> i.getRegistryName().toString(),
             Item.REGISTRY::getIDForObject);
+
+    @SerializedName("minecraft:enchantment")
+    public JsonRegistry enchantment = new JsonRegistry(
+            Enchantment.REGISTRY,
+            e -> e.getRegistryName().toString(),
+            Enchantment.REGISTRY::getIDForObject);
+
+    @SerializedName("minecraft:biome")
+    public JsonRegistry biome = new JsonRegistry(
+            Biome.REGISTRY,
+            b -> b.getRegistryName().toString(),
+            Biome.REGISTRY::getIDForObject);
 }

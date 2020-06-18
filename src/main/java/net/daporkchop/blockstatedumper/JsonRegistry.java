@@ -22,7 +22,6 @@ package net.daporkchop.blockstatedumper;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -32,21 +31,28 @@ import java.util.function.ToIntFunction;
  * @author DaPorkchop_
  */
 public class JsonRegistry {
-    @SerializedName("default")
-    public String defaultField;
     public Map<String, RegistryEntry> entries = new LinkedHashMap<>();
 
-    public <V> JsonRegistry(V defaultValue, Iterable<V> values, Function<V, String> keyExtractor, ToIntFunction<V> idExtractor) {
-        this.defaultField = keyExtractor.apply(defaultValue);
-
-        for (V v : values)   {
+    public <V> JsonRegistry(Iterable<V> values, Function<V, String> keyExtractor, ToIntFunction<V> idExtractor) {
+        for (V v : values) {
             RegistryEntry entry = new RegistryEntry();
             entry.protocol_id = idExtractor.applyAsInt(v);
             this.entries.put(keyExtractor.apply(v), entry);
         }
     }
 
-    public static class RegistryEntry   {
+    public static class WithDefault extends JsonRegistry {
+        @SerializedName("default")
+        public String defaultField;
+
+        public <V> WithDefault(V defaultValue, Iterable<V> values, Function<V, String> keyExtractor, ToIntFunction<V> idExtractor) {
+            super(values, keyExtractor, idExtractor);
+
+            this.defaultField = keyExtractor.apply(defaultValue);
+        }
+    }
+
+    public static class RegistryEntry {
         public int protocol_id;
     }
 }
