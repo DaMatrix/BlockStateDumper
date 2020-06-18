@@ -26,6 +26,8 @@ import net.minecraft.enchantment.Enchantment;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionType;
 import net.minecraft.world.biome.Biome;
 
 /**
@@ -57,4 +59,16 @@ public class JsonRegistries {
             Biome.REGISTRY,
             b -> b.getRegistryName().toString(),
             Biome.REGISTRY::getIDForObject);
+
+    @SerializedName("minecraft:mob_effect")
+    public JsonRegistry effect = new JsonRegistry(
+            Potion.REGISTRY,
+            p -> p.getRegistryName().toString(),
+            Potion.REGISTRY::getIDForObject);
+
+    @SerializedName("minecraft:potion")
+    public JsonRegistry potion = new JsonRegistry(
+            PotionType.REGISTRY,
+            p -> p.getRegistryName().toString(),
+            PotionType.REGISTRY::getIDForObject);
 }
